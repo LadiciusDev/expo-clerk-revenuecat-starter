@@ -3,13 +3,13 @@ import * as WebBrowser from 'expo-web-browser'
 import React, { useState } from 'react'
 import { Alert, Modal, Text, TouchableOpacity, View } from 'react-native'
 
-import { useUser } from '@clerk/clerk-expo'
+import type { useUser } from '@clerk/clerk-expo'
 import { FontAwesome } from '@expo/vector-icons'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import FormInput from '@/components/FormInput'
+import FormInput from '@/components/forms/FormInput'
 import ConnectedAccounts from './components/ConnectedAccounts'
 import EmailManagement from './components/EmailManagement'
 import PhoneManagement from './components/PhoneManagement'
@@ -38,8 +38,54 @@ type EmailFields = z.infer<typeof emailSchema>
 type EmailVerificationFields = z.infer<typeof emailVerificationSchema>
 type PhoneFields = z.infer<typeof phoneSchema>
 
+function SectionCard({
+  title,
+  description,
+  icon,
+  children,
+}: {
+  title: string
+  description: string
+  icon: React.ComponentProps<typeof FontAwesome>['name']
+  children: React.ReactNode
+}) {
+  return (
+    <View className="mx-5 mt-5 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+      <View className="mb-5 flex-row items-center">
+        <View className="mr-3 h-10 w-10 items-center justify-center rounded-xl bg-gray-50 border border-gray-100">
+          <FontAwesome name={icon} size={15} color="#111827" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-base font-bold text-gray-900">{title}</Text>
+          <Text className="mt-0.5 text-xs font-semibold text-gray-400">{description}</Text>
+        </View>
+      </View>
+      {children}
+    </View>
+  )
+}
+
+function AddButton({
+  label,
+  onPress,
+}: {
+  label: string
+  onPress: () => void
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="mt-4 flex-row items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 py-3 active:bg-gray-100"
+      activeOpacity={0.6}
+    >
+      <FontAwesome name="plus" size={12} color="#4B5563" />
+      <Text className="ml-2 text-sm font-semibold text-gray-700">{label}</Text>
+    </TouchableOpacity>
+  )
+}
+
 export default function ProfileSection({ user }: ProfileSectionProps) {
-  const { user: clerkUser } = useUser()
+  const clerkUser = user
   const [showAddEmailModal, setShowAddEmailModal] = useState(false)
   const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false)
   const [showAddPhoneModal, setShowAddPhoneModal] = useState(false)
@@ -268,7 +314,6 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
             )
           } else {
             // Connection didn't complete properly, clean up
-            console.log('Connection verification failed')
             Alert.alert(
               'Connection Failed',
               `Failed to verify ${provider} account connection. Please try again.`,
@@ -280,16 +325,15 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
           try {
             await externalAccount.destroy()
           } catch (cleanupError) {
-            console.log('Cleanup error after cancellation:', cleanupError)
+            console.error('Cleanup error after cancellation:', cleanupError)
           }
-          console.log('User cancelled OAuth flow')
           // Don't show error for cancellation
         } else {
           // OAuth flow failed - clean up
           try {
             await externalAccount.destroy()
           } catch (cleanupError) {
-            console.log('Cleanup error after failure:', cleanupError)
+            console.error('Cleanup error after failure:', cleanupError)
           }
           throw new Error('OAuth flow was dismissed or failed')
         }
@@ -341,105 +385,76 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
   }
 
   return (
-    <View className="flex-1">
-      {/* Profile Header */}
-      <View className="bg-white border-b border-gray-200 px-6 py-6">
-        <Text className="text-xl font-semibold text-gray-900 mb-6">Profile details</Text>
+    <View className="flex-1 pb-6">
+      <View className="mx-5 mt-5 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
         <ProfileHeader user={user} />
       </View>
 
-      {/* Email Addresses */}
-      <View className="bg-white border-b border-gray-200 px-6 py-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-medium text-gray-900">Email addresses</Text>
-        </View>
-        
+      <SectionCard
+        title="Email addresses"
+        description="Keep at least one verified email for account recovery."
+        icon="envelope"
+      >
         <EmailManagement 
           emailAddresses={user.emailAddresses}
           phoneNumbers={user.phoneNumbers || []}
           primaryEmailAddressId={user.primaryEmailAddressId}
           onEmailDeleted={() => clerkUser?.reload()}
         />
-        
-        <TouchableOpacity
-          onPress={showAddEmailOptions}
-          className="flex-row items-center mt-4"
-        >
-          <FontAwesome name="plus" size={16} color="#374151" />
-          <Text className="text-gray-700 font-medium ml-2">Add email address</Text>
-        </TouchableOpacity>
-      </View>
+        <AddButton label="Add email address" onPress={showAddEmailOptions} />
+      </SectionCard>
 
-      {/* Phone Numbers */}
-      <View className="bg-white border-b border-gray-200 px-6 py-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-medium text-gray-900">Phone number</Text>
-        </View>
-        
+      <SectionCard
+        title="Phone numbers"
+        description="Add a phone number as another recovery option."
+        icon="phone"
+      >
         <PhoneManagement 
           phoneNumbers={user.phoneNumbers || []}
           emailAddresses={user.emailAddresses}
           primaryPhoneNumberId={user.primaryPhoneNumberId}
           onPhoneDeleted={() => clerkUser?.reload()}
         />
-        
-        <TouchableOpacity
-          onPress={showAddPhoneOptions}
-          className="flex-row items-center mt-4"
-        >
-          <FontAwesome name="plus" size={16} color="#374151" />
-          <Text className="text-gray-700 font-medium ml-2">Add phone number</Text>
-        </TouchableOpacity>
-      </View>
+        <AddButton label="Add phone number" onPress={showAddPhoneOptions} />
+      </SectionCard>
 
-      {/* Connected Accounts */}
-      <View className="bg-white border-b border-gray-200 px-6 py-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-medium text-gray-900">Connected accounts</Text>
-        </View>
-        
+      <SectionCard
+        title="Connected accounts"
+        description="Use social accounts as additional sign-in methods."
+        icon="link"
+      >
         <ConnectedAccounts 
           externalAccounts={user.externalAccounts || []}
           onAccountDisconnected={() => clerkUser?.reload()}
         />
-        
-        {/* Only show Connect account button if there are unconnected providers */}
         {unconnectedProviders.length > 0 && (
-          <TouchableOpacity
-            onPress={showConnectAccountOptions}
-            className="flex-row items-center mt-4"
-          >
-            <FontAwesome name="plus" size={16} color="#374151" />
-            <Text className="text-gray-700 font-medium ml-2">Connect account</Text>
-          </TouchableOpacity>
+          <AddButton label="Connect account" onPress={showConnectAccountOptions} />
         )}
-      </View>
-
-      {/* Bottom spacing */}
-      <View className="h-20" />
+      </SectionCard>
 
       {/* Add Email Modal */}
+      {showAddEmailModal && (
       <Modal
-        visible={showAddEmailModal}
+        visible
         animationType="slide"
         presentationStyle="pageSheet"
       >
         <View className="flex-1 bg-gray-50">
           <View className="flex-row justify-between items-center p-4 border-b border-gray-200 bg-white">
-                         <TouchableOpacity onPress={() => setShowAddEmailModal(false)}>
-               <Text className="text-gray-700 font-medium">Cancel</Text>
-             </TouchableOpacity>
-             <Text className="text-lg font-semibold">Add Email</Text>
-             <TouchableOpacity 
-               onPress={handleEmailSubmit(handleAddEmail)}
-               disabled={isAddingEmail}
-             >
-               <Text className={`font-medium ${
-                 isAddingEmail ? 'text-gray-400' : 'text-gray-700'
-               }`}>
-                 {isAddingEmail ? 'Adding...' : 'Add'}
-               </Text>
-             </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowAddEmailModal(false)}>
+              <Text className="text-gray-700 font-semibold">Cancel</Text>
+            </TouchableOpacity>
+            <Text className="text-lg font-semibold text-gray-950">Add Email</Text>
+            <TouchableOpacity 
+              onPress={handleEmailSubmit(handleAddEmail)}
+              disabled={isAddingEmail}
+            >
+              <Text className={`font-semibold ${
+                isAddingEmail ? 'text-gray-400' : 'text-gray-900'
+              }`}>
+                {isAddingEmail ? 'Adding...' : 'Add'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View className="p-6">
@@ -460,25 +475,27 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
           </View>
         </View>
       </Modal>
+      )}
 
       {/* Email Verification Modal */}
+      {showEmailVerificationModal && (
       <Modal
-        visible={showEmailVerificationModal}
+        visible
         animationType="slide"
         presentationStyle="pageSheet"
       >
         <View className="flex-1 bg-gray-50">
           <View className="flex-row justify-between items-center p-4 border-b border-gray-200 bg-white">
             <TouchableOpacity onPress={() => setShowEmailVerificationModal(false)}>
-              <Text className="text-gray-700 font-medium">Cancel</Text>
+              <Text className="text-gray-700 font-semibold">Cancel</Text>
             </TouchableOpacity>
-            <Text className="text-lg font-semibold">Verify Email</Text>
+            <Text className="text-lg font-semibold text-gray-950">Verify Email</Text>
             <TouchableOpacity 
               onPress={handleEmailVerificationSubmit(handleEmailVerification)}
               disabled={isVerifyingEmail}
             >
-              <Text className={`font-medium ${
-                isVerifyingEmail ? 'text-gray-400' : 'text-gray-700'
+              <Text className={`font-semibold ${
+                isVerifyingEmail ? 'text-gray-400' : 'text-gray-900'
               }`}>
                 {isVerifyingEmail ? 'Verifying...' : 'Verify'}
               </Text>
@@ -517,25 +534,27 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
           </View>
         </View>
       </Modal>
+      )}
 
       {/* Add Phone Modal */}
+      {showAddPhoneModal && (
       <Modal
-        visible={showAddPhoneModal}
+        visible
         animationType="slide"
         presentationStyle="pageSheet"
       >
         <View className="flex-1 bg-gray-50">
           <View className="flex-row justify-between items-center p-4 border-b border-gray-200 bg-white">
             <TouchableOpacity onPress={() => setShowAddPhoneModal(false)}>
-              <Text className="text-gray-700 font-medium">Cancel</Text>
+              <Text className="text-gray-700 font-semibold">Cancel</Text>
             </TouchableOpacity>
-            <Text className="text-lg font-semibold">Add Phone</Text>
+            <Text className="text-lg font-semibold text-gray-950">Add Phone</Text>
             <TouchableOpacity 
               onPress={handlePhoneSubmit(handleAddPhone)}
               disabled={isAddingPhone}
             >
-              <Text className={`font-medium ${
-                isAddingPhone ? 'text-gray-400' : 'text-gray-700'
+              <Text className={`font-semibold ${
+                isAddingPhone ? 'text-gray-400' : 'text-gray-900'
               }`}>
                 {isAddingPhone ? 'Adding...' : 'Add'}
               </Text>
@@ -559,19 +578,21 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
           </View>
                  </View>
        </Modal>
+       )}
 
        {/* Connect Account Modal */}
+       {showConnectModal && (
        <Modal
-         visible={showConnectModal}
+         visible
          animationType="slide"
          presentationStyle="pageSheet"
        >
          <View className="flex-1 bg-gray-50">
            <View className="flex-row justify-between items-center p-4 border-b border-gray-200 bg-white">
              <TouchableOpacity onPress={() => setShowConnectModal(false)}>
-               <Text className="text-gray-700 font-medium">Cancel</Text>
+               <Text className="text-gray-700 font-semibold">Cancel</Text>
              </TouchableOpacity>
-             <Text className="text-lg font-semibold">Connect Account</Text>
+             <Text className="text-lg font-semibold text-gray-950">Connect Account</Text>
              <View className="w-16" />
            </View>
 
@@ -586,7 +607,7 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
                  key={provider.id}
                  onPress={() => handleConnectProvider(provider.id as 'google' | 'apple')}
                  disabled={isConnecting}
-                 className={`flex-row items-center p-4 bg-white rounded-lg border border-gray-200 ${
+               className={`flex-row items-center rounded-xl border border-gray-200 bg-white p-4 ${
                    index < unconnectedProviders.length - 1 ? 'mb-4' : ''
                  } ${isConnecting ? 'opacity-50' : 'active:bg-gray-50'}`}
                >
@@ -620,6 +641,7 @@ export default function ProfileSection({ user }: ProfileSectionProps) {
            </View>
          </View>
        </Modal>
+       )}
     </View>
   )
 } 

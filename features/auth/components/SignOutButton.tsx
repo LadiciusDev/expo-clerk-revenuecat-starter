@@ -1,8 +1,9 @@
 import React from 'react'
-import { TouchableOpacity, Text, Alert } from 'react-native'
+import { Alert } from 'react-native'
 
 import { useRouter } from 'expo-router'
 import { useAuth } from '@clerk/clerk-expo'
+import { Button } from '@/components/ui/Button'
 
 const SignOutButton = () => {
   const { signOut } = useAuth()
@@ -24,12 +25,7 @@ const SignOutButton = () => {
             style: 'destructive',
             onPress: async () => {
               try {
-                // Clear Clerk session completely
-                console.log('Signing out...')
                 await signOut()
-
-                console.log('Signed out successfully')
-
                 router.replace('/')
               } catch (error) {
                 console.error('Error during sign out:', error)
@@ -49,14 +45,12 @@ const SignOutButton = () => {
   }
 
   return (
-    <TouchableOpacity
+    <Button
+      title="Sign Out"
+      variant="destructive"
       onPress={handleSignOut}
-      className="bg-red-500 rounded-lg py-3 px-6 mt-5"
-    >
-      <Text className="text-white font-semibold text-center">
-        Sign Out
-      </Text>
-    </TouchableOpacity>
+      className="mt-5 px-6 py-3"
+    />
   )
 }
 

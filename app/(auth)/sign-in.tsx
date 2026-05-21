@@ -13,8 +13,9 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo'
 
-import FormInput from '@/components/FormInput'
-import SignInWith from '@/components/auth/SignInWith'
+import FormInput from '@/components/forms/FormInput'
+import { Button } from '@/components/ui/Button'
+import SignInWith from '@/features/auth/components/SignInWith'
 
 // Sign-in validation schema
 const signInSchema = z.object({
@@ -65,7 +66,6 @@ export default function SignInScreen() {
         await setActive({ session: signInAttempt.createdSessionId })
         router.replace('/(tabs)/home')
       } else {
-        console.log('Sign in failed')
         setError('root', { message: 'Sign in could not be completed' })
       }
     } catch (err) {
@@ -147,14 +147,11 @@ export default function SignInScreen() {
             </Text>
           )}
 
-          <TouchableOpacity 
+          <Button
+            title="Sign In"
             onPress={handleSubmit(onSignIn)}
-            className="bg-black rounded-lg py-4 items-center mb-6"
-          >
-            <Text className="text-white font-semibold">
-              Sign In
-            </Text>
-          </TouchableOpacity>
+            className="mb-6"
+          />
 
           <View className="flex-row justify-center">
             <Text className="text-gray-600 text-sm">Don&apos;t have an account? </Text>

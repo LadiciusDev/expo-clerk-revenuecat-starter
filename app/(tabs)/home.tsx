@@ -4,8 +4,8 @@ import { Modal, Text, TouchableOpacity, View } from 'react-native'
 import { useUser } from '@clerk/clerk-expo'
 import { FontAwesome } from '@expo/vector-icons'
 
-import SignOutButton from '../../components/auth/SignOutButton'
-import UserProfileSettings from '../../components/auth/UserProfileSettings'
+import { APP_CONFIG } from '@/config/app'
+import UserProfileSettings from '@/features/auth/UserProfileSettings'
 
 export default function HomeScreen() {
   const { user } = useUser()
@@ -15,9 +15,9 @@ export default function HomeScreen() {
     <View className="flex-1 justify-center items-center bg-gray-50 px-6">
       <View className="bg-white rounded-lg shadow-md p-6 w-full max-w-sm">
         <Text className="text-2xl font-bold text-center mb-4 text-gray-800">
-          Welcome to react-native-expo-clerk-starter! 🎉
+          Welcome to {APP_CONFIG.name}
         </Text>
-        
+
         {user && (
           <View className="mb-6">
             <Text className="text-gray-600 text-center mb-2">
@@ -28,7 +28,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
-        
+
         <View className="items-center space-y-3">
           <TouchableOpacity
             onPress={() => setShowProfileSettings(true)}
@@ -37,24 +37,25 @@ export default function HomeScreen() {
             <FontAwesome name="user" size={16} color="white" />
             <Text className="text-white font-semibold ml-2">Profile Settings</Text>
           </TouchableOpacity>
-          
-          <SignOutButton />
         </View>
       </View>
 
-      {/* Profile Settings Modal */}
       <Modal
         visible={showProfileSettings}
         animationType="slide"
         presentationStyle="pageSheet"
+        onRequestClose={() => setShowProfileSettings(false)}
       >
-        <View className="flex-1">
-          <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-            <TouchableOpacity onPress={() => setShowProfileSettings(false)}>
-              <FontAwesome name="times" size={20} color="#374151" />
+        <View className="flex-1 bg-gray-100">
+          <View className="flex-row items-center justify-between border-b border-gray-200 bg-white p-4">
+            <TouchableOpacity
+              onPress={() => setShowProfileSettings(false)}
+              className="h-9 w-9 items-center justify-center rounded-full bg-gray-100"
+            >
+              <FontAwesome name="times" size={18} color="#374151" />
             </TouchableOpacity>
-            <Text className="text-lg font-semibold">Profile Settings</Text>
-            <View className="w-5" />
+            <Text className="text-lg font-semibold text-gray-950">Profile Settings</Text>
+            <View className="h-9 w-9" />
           </View>
           <UserProfileSettings />
         </View>
