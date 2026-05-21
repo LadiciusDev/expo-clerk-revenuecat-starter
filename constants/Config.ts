@@ -1,7 +1,8 @@
-const WEB_URL = 'https://react-native-expo-clerk-starter.com';
+import { APP_CONFIG } from '@/config/app';
 
-const WEB_URL_TERMS = 'https://react-native-expo-clerk-starter.com/terms-of-use';
-const WEB_URL_PRIVACY = 'https://react-native-expo-clerk-starter.com/privacy-policy';
+const WEB_URL = new URL(APP_CONFIG.termsUrl).origin;
+
+const WEB_URL_TERMS = APP_CONFIG.termsUrl;
+const WEB_URL_PRIVACY = APP_CONFIG.privacyUrl;
 
 export { WEB_URL, WEB_URL_PRIVACY, WEB_URL_TERMS };
-

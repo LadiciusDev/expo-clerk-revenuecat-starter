@@ -13,7 +13,8 @@ import { useRouter } from 'expo-router'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import FormInput from '@/components/FormInput'
+import FormInput from '@/components/forms/FormInput'
+import { Button } from '@/components/ui/Button'
 
 // Forgot password validation schema
 const forgotPasswordSchema = z.object({
@@ -100,14 +101,11 @@ export default function ForgotPasswordScreen() {
             </Text>
           )}
 
-          <TouchableOpacity 
+          <Button
+            title="Send Reset Link"
             onPress={handleSubmit(onSendReset)}
-            className="bg-black rounded-lg py-4 items-center mb-6"
-          >
-            <Text className="text-white font-semibold">
-              Send Reset Link
-            </Text>
-          </TouchableOpacity>
+            className="mb-6"
+          />
 
           <View className="flex-row justify-center">
             <Text className="text-gray-600 text-sm">Remember your password? </Text>

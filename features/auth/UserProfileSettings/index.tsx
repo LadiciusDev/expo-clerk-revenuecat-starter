@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { useUser } from '@clerk/clerk-expo'
+import { FontAwesome } from '@expo/vector-icons'
 
 import ProfileSection from './ProfileSection'
 import SecuritySection from './SecuritySection'
+import { cn } from '@/utils/style'
 
 type TabType = 'profile' | 'security'
 
@@ -45,42 +47,49 @@ export default function UserProfileSettings() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-white border-b border-gray-200 px-6 pt-12 pb-4">
-        <Text className="text-2xl font-bold text-gray-900 mb-2">Account</Text>
-        <Text className="text-gray-600">Manage your account info.</Text>
+    <View className="flex-1 bg-gray-100">
+      <View className="bg-white px-6 pt-12 pb-5 border-b border-gray-200">
+        <View className="flex-row items-center">
+          <View className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center mr-3">
+            <FontAwesome name="user" size={18} color="#ffffff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-2xl font-bold text-gray-950">Account</Text>
+            <Text className="text-gray-500 mt-1">Manage your profile and sign-in methods.</Text>
+          </View>
+        </View>
       </View>
 
-      {/* Tab Navigation */}
-      <View className="bg-white border-b border-gray-200">
-        <ScrollView 
-          horizontal 
+      <View className="bg-white border-b border-gray-200 px-6 py-4">
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
-          className="px-6"
         >
-          <View className="flex-row py-4">
-            {tabs.map((tab, index) => (
-              <TouchableOpacity
+          <View className="flex-row rounded-xl bg-gray-100 p-1">
+            {tabs.map((tab) => (
+              <Pressable
                 key={tab.key}
                 onPress={() => setActiveTab(tab.key)}
-                className={`pb-2 ${activeTab === tab.key ? 'border-b-2 border-black' : ''} ${index > 0 ? 'ml-8' : ''}`}
+                className={cn(
+                  "min-w-[112px] rounded-lg px-4 py-2.5"
+                )}
+                style={{ backgroundColor: activeTab === tab.key ? '#ffffff' : '#f3f4f6' }}
               >
                 <Text
-                  className={`font-medium ${
-                    activeTab === tab.key ? 'text-black' : 'text-gray-600'
-                  }`}
+                  className={cn(
+                    "text-center font-semibold"
+                  )}
+                  style={{ color: activeTab === tab.key ? '#0f172a' : '#6b7280' }}
                 >
                   {tab.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </ScrollView>
       </View>
 
-      {/* Content */}
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
         {renderContent()}
       </ScrollView>
     </View>

@@ -14,9 +14,10 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 
-import FormInput from '@/components/FormInput'
-import SignInWith from '@/components/auth/SignInWith'
-import { WEB_URL_TERMS, WEB_URL_PRIVACY } from '@/constants/Config'
+import FormInput from '@/components/forms/FormInput'
+import { Button } from '@/components/ui/Button'
+import SignInWith from '@/features/auth/components/SignInWith'
+import { APP_CONFIG } from '@/config/app'
 
 // Sign-up validation schema
 const signUpSchema = z.object({
@@ -75,9 +76,9 @@ export default function SignUpScreen() {
 
   const { signUp, isLoaded, setActive } = useSignUp()
 
-  const openTerms = async () => {
+  const openLegalUrl = async (url: string) => {
     try {
-      await WebBrowser.openBrowserAsync(WEB_URL_TERMS, {
+      await WebBrowser.openBrowserAsync(url, {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
         controlsColor: '#3B82F6',
         readerMode: false,
@@ -85,21 +86,7 @@ export default function SignUpScreen() {
         enableBarCollapsing: false,
       })
     } catch (error) {
-      console.error('Error opening Terms of Service:', error)
-    }
-  }
-
-  const openPrivacy = async () => {
-    try {
-      await WebBrowser.openBrowserAsync(WEB_URL_PRIVACY, {
-        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
-        controlsColor: '#3B82F6',
-        readerMode: false,
-        showTitle: true,
-        enableBarCollapsing: false,
-      })
-    } catch (error) {
-      console.error('Error opening Privacy Policy:', error)
+      console.error('Error opening legal URL:', error)
     }
   }
 
@@ -124,12 +111,9 @@ export default function SignUpScreen() {
       setPendingEmail(data.email)
       setIsVerifyingEmail(true)
     } catch (err) {
-      console.log('Sign up error:', err)
       if (isClerkAPIResponseError(err)) {
         err.errors.forEach((error) => {
-          console.log('Error:', JSON.stringify(error, null, 2))
           const fieldName = mapClerkErrorToFormField(error)
-          console.log('Field name:', fieldName)
           setError(fieldName, {
             message: error.longMessage,
           })
@@ -155,7 +139,6 @@ export default function SignUpScreen() {
         setVerifyError('root', { message: 'Verification failed. Please try again.' })
       }
     } catch (err) {
-      console.log('Verification error:', err)
       if (isClerkAPIResponseError(err)) {
         err.errors.forEach((error) => {
           setVerifyError('code', {
@@ -201,12 +184,11 @@ export default function SignUpScreen() {
               </Text>
             )}
 
-            <TouchableOpacity
+            <Button
+              title="Verify Email"
               onPress={handleVerifySubmit(onVerify)}
-              className="bg-black rounded-lg py-4 items-center mb-6"
-            >
-              <Text className="text-white font-semibold">Verify Email</Text>
-            </TouchableOpacity>
+              className="mb-6"
+            />
 
             <View className="flex-row justify-center">
               <TouchableOpacity onPress={() => setIsVerifyingEmail(false)}>
@@ -302,28 +284,25 @@ export default function SignUpScreen() {
               By continuing, you agree to our{' '}
               <Text 
                 className="underline" 
-                onPress={openTerms}
+                onPress={() => void openLegalUrl(APP_CONFIG.termsUrl)}
               >
                 Terms of Service
               </Text>
               {' '}and{' '}
               <Text 
                 className="underline" 
-                onPress={openPrivacy}
+                onPress={() => void openLegalUrl(APP_CONFIG.privacyUrl)}
               >
                 Privacy Policy
               </Text>
             </Text>
           </View>
 
-          <TouchableOpacity 
+          <Button
+            title="Create Account"
             onPress={handleSubmit(onSignUp)}
-            className="bg-black rounded-lg py-4 items-center mb-6"
-          >
-            <Text className="text-white font-semibold">
-              Create Account
-            </Text>
-          </TouchableOpacity>
+            className="mb-6"
+          />
 
           <View className="flex-row justify-center">
             <Text className="text-gray-600 text-sm">Already have an account? </Text>

@@ -68,9 +68,6 @@ export default function SignInWith({ strategy, variant = 'icon' }: SignInWithPro
             'Please complete the additional security steps to continue.',
             [{ text: 'OK' }]
           )
-        } else {
-          // No session, no signIn/signUp objects - flow was likely cancelled
-          console.log('OAuth flow was cancelled or incomplete')
         }
       }
     } catch (err) {
@@ -89,8 +86,6 @@ export default function SignInWith({ strategy, variant = 'icon' }: SignInWithPro
         if (err.message.includes('cancelled') || 
             err.message.includes('dismissed') || 
             err.message.includes('user_cancelled')) {
-          // User cancelled the OAuth flow, don't show error and don't mark as connected
-          console.log('User cancelled OAuth flow')
           setIsLoading(false)
           return
         }
